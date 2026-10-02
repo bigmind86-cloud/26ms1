@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중2 사회 인터랙티브 문제풀이</title>
+<style>
+  :root{
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --bg:#f3f4f6;
+    --card-bg:#ffffff;
+    --fg:#111827;
+    --muted:#6b7280;
+    --border:#d1d5db;
+    --radius:10px;
+    --green:#16a34a;
+    --green-bg:#ecfdf5;
+    --red:#dc2626;
+    --red-bg:#fef2f2;
+  }
+  * { box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:var(--bg);
+    color:var(--fg);
+    padding-bottom:60px;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:var(--primary);
+    color:#fff;
+    padding:14px 18px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  }
+  header h1{
+    margin:0 0 8px 0;
+    font-size:18px;
+    font-weight:700;
+  }
+  .stats{
+    display:flex;
+    gap:18px;
+    align-items:center;
+    flex-wrap:wrap;
+    font-size:13px;
+  }
+  .stat-box{
+    background:rgba(255,255,255,0.15);
+    border-radius:8px;
+    padding:6px 12px;
+  }
+  .progress-wrap{
+    flex:1;
+    min-width:140px;
+    background:rgba(255,255,255,0.25);
+    border-radius:6px;
+    height:8px;
+    overflow:hidden;
+  }
+  .progress-bar{
+    height:100%;
+    background:#ffffff;
+    width:0%;
+    transition:width .3s ease;
+  }
+  .reset-btn{
+    background:#ffffff;
+    color:var(--primary-dark);
+    border:none;
+    border-radius:6px;
+    padding:6px 12px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .reset-btn:hover{ background:#e5e7eb; }
+
+  nav{
+    display:flex;
+    gap:6px;
+    padding:12px 18px 0 18px;
+    overflow-x:auto;
+  }
+  .tab-btn{
+    flex:0 0 auto;
+    padding:8px 14px;
+    border-radius:8px 8px 0 0;
+    border:1px solid var(--border);
+    border-bottom:none;
+    background:#e5e7eb;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .tab-btn.active{
+    background:var(--card-bg);
+    color:var(--primary);
+  }
+
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:0 18px;
+  }
+  .part-panel{ display:none; }
+  .part-panel.active{ display:block; }
+
+  .section-title{
+    font-size:15px;
+    font-weight:700;
+    margin:20px 0 10px 0;
+    color:var(--primary-dark);
+    border-left:4px solid var(--primary);
+    padding-left:8px;
+  }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:12px;
+  }
+  .q-index{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .q-text{
+    font-size:14.5px;
+    line-height:1.5;
+    margin-bottom:12px;
+  }
+  .ox-buttons{
+    display:flex;
+    gap:10px;
+  }
+  .ox-btn{
+    flex:1;
+    padding:10px 0;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--fg);
+  }
+  .ox-btn:hover:not(:disabled){ background:#eef2ff; }
+  .ox-btn:disabled{ cursor:default; opacity:0.55; }
+  .ox-btn.chosen-correct{ background:var(--green-bg); border-color:var(--green); color:var(--green); opacity:1; }
+  .ox-btn.chosen-wrong{ background:var(--red-bg); border-color:var(--red); color:var(--red); opacity:1; }
+  .ox-btn.reveal-correct{ border-color:var(--green); color:var(--green); opacity:1; }
+
+  .short-row{
+    display:flex;
+    gap:8px;
+  }
+  .short-row input{
+    flex:1;
+    padding:9px 10px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    font-size:14px;
+    font-family:inherit;
+  }
+  .short-row button{
+    padding:9px 16px;
+    border-radius:8px;
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .short-row button:hover{ background:var(--primary-dark); }
+  .short-row button:disabled{ background:#9ca3af; cursor:default; }
+
+  .result-banner{
+    margin-top:10px;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:700;
+    display:none;
+  }
+  .result-banner.show{ display:block; }
+  .result-banner.correct{ background:var(--green-bg); color:var(--green); }
+  .result-banner.wrong{ background:var(--red-bg); color:var(--red); }
+
+  .explain{
+    margin-top:8px;
+    padding:10px 12px;
+    background:#f9fafb;
+    border:1px dashed var(--border);
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.55;
+    color:#374151;
+    display:none;
+  }
+  .explain.show{ display:block; }
+  .explain b{ color:var(--primary-dark); }
+
+  .nav-footer{
+    display:flex;
+    justify-content:space-between;
+    max-width:760px;
+    margin:16px auto 0 auto;
+    padding:0 18px;
+  }
+  .nav-footer button{
+    padding:9px 16px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .nav-footer button:hover{ background:#eef2ff; }
+  .nav-footer button:disabled{ opacity:0.4; cursor:default; }
+
+  .final-msg{
+    max-width:760px;
+    margin:16px auto;
+    padding:16px;
+    background:#eef2ff;
+    border:1px solid var(--primary);
+    border-radius:var(--radius);
+    text-align:center;
+    font-size:14px;
+    font-weight:600;
+    color:var(--primary-dark);
+    display:none;
+  }
+  .final-msg.show{ display:block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>중학교 2학년 사회 - 인터랙티브 문제풀이</h1>
+  <div class="stats">
+    <div class="stat-box">진행 <span id="progressText">0 / 0</span></div>
+    <div class="stat-box">점수 <span id="scoreText">0</span>점</div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <button class="reset-btn" id="resetBtn">다시 풀기</button>
+  </div>
+</header>
+
+<nav id="tabNav"></nav>
+
+<main id="mainContent"></main>
+
+<div class="nav-footer">
+  <button id="prevBtn">이전 단원</button>
+  <button id="nextBtn">다음 단원 ▶</button>
+</div>
+
+<div class="final-msg" id="finalMsg"></div>
+
+<script>
+const QUIZ_DATA = {"parts": [{"title": "Part 1. 국제 사회와 국제 협력", "ox": [], "short": [{"q": "남극의 평화적 이용을 위해 영유권 주장을 금지하고 맺은 조약의 이름은 무엇인가?", "answers": ["남극조약", "남극 조약"], "explain": "남극조약(1959년 체결)은 남극 대륙을 평화적 목적으로만 이용하도록 하고, 각국의 영유권 주장을 동결(금지)하기로 한 국제 조약입니다."}]}, {"title": "Part 2. 사회화와 사회적 지위·역할, 집단", "ox": [{"q": "사회화란 개인이 사회 구성원으로 살아가는 데 필요한 규범과 가치관을 배워 나가는 과정이다.", "a": true, "explain": "사회화의 정의 그대로입니다. 사회화를 통해 개인은 그 사회에서 필요한 언어, 규범, 가치관 등을 습득합니다."}, {"q": "사람이 태어나서 처음으로 접하는 가장 기본적인 사회화 기관은 학교이다.", "a": false, "explain": "가장 기본적이고 처음 접하는 사회화 기관은 '가정'입니다. 학교는 이후 단계에서 중요한 역할을 하는 사회화 기관입니다."}, {"q": "태어날 때부터 쌍꺼풀이 있는 것은 사회화의 결과에 해당한다.", "a": false, "explain": "쌍꺼풀과 같은 선천적 신체 특징은 유전적 요인에 의한 것으로, 후천적 학습 과정인 사회화의 결과라고 볼 수 없습니다."}, {"q": "한국에서 태어나 한국어를 사용하는 것은 사회화와 관련이 깊다.", "a": true, "explain": "언어 습득은 가정, 학교 등 사회화 기관을 통해 후천적으로 학습되는 대표적인 사회화의 결과입니다."}, {"q": "귀속지위는 개인의 노력이나 능력에 의해 후천적으로 얻게 되는 지위이다.", "a": false, "explain": "이는 '성취지위'에 대한 설명입니다. 귀속지위는 태어나면서부터 선천적으로 갖게 되는 지위입니다."}, {"q": "성취지위는 태어나면서 자연스럽게 갖게 되는 지위이다.", "a": false, "explain": "이는 '귀속지위'에 대한 설명입니다. 성취지위는 개인의 노력과 능력으로 후천적으로 얻는 지위입니다."}, {"q": "현대 사회에서는 귀속 지위보다 성취 지위의 중요성이 커지고 있다.", "a": true, "explain": "신분제 사회와 달리 현대 사회에서는 개인의 노력과 성취에 따라 얻는 지위가 더욱 중시되고 있습니다."}, {"q": "한 개인이 여러 개의 사회적 지위를 동시에 가질 수 있다.", "a": true, "explain": "한 사람은 자녀, 학생, 친구, 동아리 회원 등 동시에 여러 지위를 가질 수 있습니다."}, {"q": "지위에 따라 사회가 기대하는 행동 양식을 '역할'이라고 한다.", "a": true, "explain": "역할의 정의 그대로입니다. 예를 들어 '학생'이라는 지위에는 '공부를 열심히 한다'는 역할 기대가 따릅니다."}, {"q": "역할 갈등은 개인이 가진 여러 역할 간의 충돌로 인해 발생한다.", "a": true, "explain": "한 사람이 가진 여러 지위에 따른 역할들이 동시에 요구되어 충돌할 때 역할 갈등이 발생합니다."}, {"q": "직장은 주로 성인기의 주요 사회화 기관에 해당한다.", "a": true, "explain": "직장은 성인이 된 이후 직업 생활에 필요한 규범과 지식을 습득하는 대표적인 사회화 기관입니다."}, {"q": "대중매체는 미디어를 통해 일상적으로 지식과 정보를 얻게 해 준다.", "a": true, "explain": "대중매체(TV, 신문, 인터넷 등)는 현대 사회의 대표적인 사회화 기관 중 하나입니다."}, {"q": "사회화는 인간이 태어나서 유아기에만 이루어지고 이후에는 멈춘다.", "a": false, "explain": "사회화는 유아기뿐 아니라 평생에 걸쳐 가정, 학교, 직장 등을 통해 계속 이루어집니다."}, {"q": "장애인이라는 이유로 학교 입학을 거부당하는 것은 차별 사례에 해당한다.", "a": true, "explain": "개인의 특성과 무관한 이유로 기회를 제한하는 것은 명백한 차별 사례입니다."}, {"q": "여자라는 이유로 회사에서 승진하지 못하는 것은 편견과 차별에 해당한다.", "a": true, "explain": "성별에 대한 고정관념(편견)에 따라 불이익을 주는 것은 성차별에 해당합니다."}, {"q": "다양한 갈등을 해결하기 위해서는 차별적인 법과 제도를 개선해야 한다.", "a": true, "explain": "차별 문제 해결을 위해서는 의식 개선과 더불어 차별적인 법과 제도의 개선이 필요합니다."}, {"q": "의견이 대립할 때 반드시 다수결로만 해결해야 민주적이다.", "a": false, "explain": "다수결은 민주적 의사 결정 방법 중 하나일 뿐이며, 소수 의견 존중과 토론·양보를 통한 합의 역시 중요한 민주적 해결 방법입니다."}, {"q": "외국인 인구와 비율이 증가하는 현상은 우리 사회가 다문화 사회로 변화하고 있음을 보여준다.", "a": true, "explain": "외국인 주민 증가는 우리 사회가 다양한 문화적 배경을 가진 사람들이 함께 살아가는 다문화 사회로 변화하고 있음을 보여주는 지표입니다."}], "short": [{"q": "개인이 노력이나 능력과 상관없이 태어나면서 선천적으로 갖게 되는 지위를 무엇이라 하는가?", "answers": ["귀속지위", "귀속 지위"], "explain": "귀속지위는 본인의 의지와 무관하게 선천적으로 주어지는 지위입니다. (예: 아들, 딸, 장남)"}, {"q": "개인의 노력과 능력에 의해 후천적으로 얻게 되는 지위를 무엇이라 하는가?", "answers": ["성취지위", "성취 지위"], "explain": "성취지위는 개인의 선택과 노력을 통해 후천적으로 얻게 되는 지위입니다. (예: 학생, 회사원, 의사)"}, {"q": "한 개인이 동시에 수행해야 하는 역할들이 서로 충돌하여 겪는 갈등을 무엇이라 하는가?", "answers": ["역할갈등", "역할 갈등"], "explain": "역할 갈등은 한 개인이 가진 여러 지위에 따른 역할들이 동시에 요구되어 서로 충돌할 때 발생합니다."}, {"q": "자신이 속해 있으면서 소속감과 안정감을 느끼는 집단을 무엇이라 하는가?", "answers": ["내집단", "내 집단", "우리집단", "우리 집단"], "explain": "내집단(우리 집단)은 자신이 속해 있으면서 소속감과 공동체 의식을 느끼는 집단입니다. 반대 개념은 '외집단'입니다."}, {"q": "사람이 태어나서 처음으로 접하며 기초적인 생활 습관과 언어를 익히는 사회화 기관은 어디인가?", "answers": ["가정"], "explain": "가정은 인간이 태어나 가장 먼저 접하는 사회화 기관으로, 기초적인 생활 습관과 언어, 예절 등을 배웁니다."}]}, {"title": "Part 3. 문화의 속성과 의미", "ox": [{"q": "한국인들은 한복을 입고, 다른 나라의 전통 의상을 입는 것은 문화의 다양성을 보여준다.", "a": true, "explain": "지역과 사회마다 서로 다른 생활 양식(의복 문화)이 나타나는 것은 문화의 다양성(특수성)을 보여주는 예입니다."}, {"q": "문화의 공유성은 사회 구성원들이 공통된 생활 양식을 가지고 있음을 의미한다.", "a": true, "explain": "공유성은 한 사회의 구성원들이 문화를 공통으로 가지고 있어 서로의 행동을 예측하고 이해할 수 있게 해 주는 문화의 속성입니다."}, {"q": "모든 문화는 인류가 공통으로 지니는 보편적 측면이 존재한다.", "a": true, "explain": "문화의 보편성에 대한 설명으로, 의식주, 가족, 언어 등 모든 사회에 공통으로 나타나는 문화 요소가 존재합니다."}, {"q": "지역에 따라 서로 다른 문화적 특색이 나타나는 것을 문화의 다양성이라 한다.", "a": true, "explain": "자연환경, 역사적 배경 등의 차이로 지역·사회마다 다르게 나타나는 문화적 특성을 문화의 다양성(특수성)이라고 합니다."}, {"q": "'이번에 대회 상품으로 문화 상품권을 받았어'에서 '문화'는 예술이나 교양의 의미로 쓰였다.", "a": true, "explain": "이때의 '문화'는 공연, 예술 등 좁은 의미(교양 있고 세련된 것)로 사용된 것입니다."}, {"q": "'한국의 음식 문화'나 '청소년 문화'에서 '문화'는 인간의 전체적인 생활 양식을 뜻한다.", "a": true, "explain": "이때의 '문화'는 한 사회 구성원이 공유하는 의식주, 가치관 등 생활 양식 전체를 가리키는 넓은 의미로 쓰였습니다."}, {"q": "다른 문화를 평가할 때 우리 문화의 척도만으로 판단하는 태도를 문화 상대주의라 한다.", "a": false, "explain": "이는 '자문화 중심주의'에 대한 설명입니다. 문화 상대주의는 각 문화를 그 사회의 역사와 맥락 속에서 이해하려는 태도입니다."}, {"q": "인류의 보편적 가치를 심각하게 무시하는 관습은 무조건 존중해야 한다.", "a": false, "explain": "이는 '극단적 문화 상대주의'로, 경계해야 할 태도입니다. 인권 등 인류의 보편적 가치를 침해하는 관습은 문화 상대주의의 이름으로 무조건 인정해서는 안 되며 비판적으로 바라보아야 합니다."}, {"q": "문화를 이해할 때는 그 사회의 역사적 환경과 맥락을 고려해야 한다.", "a": true, "explain": "문화 상대주의적 관점으로, 각 사회의 자연환경과 역사적·사회적 맥락 속에서 그 문화가 가지는 의미를 이해해야 합니다."}, {"q": "다문화 사회로 나아가면서 우리 사회에는 다양한 문화적 배경을 가진 사람들이 증가하고 있다.", "a": true, "explain": "국제 교류 증가로 외국인 근로자, 결혼 이민자 등이 늘면서 우리 사회는 다문화 사회로 변화하고 있습니다."}, {"q": "외국인 인구와 비율이 증가하는 현상은 우리 사회가 다문화 사회로 변화하고 있음을 보여준다.", "a": true, "explain": "외국인 주민 수와 비율의 증가는 다문화 사회로의 변화를 보여주는 대표적인 통계적 근거입니다."}], "short": [{"q": "한복을 입거나 언어를 사용하는 것처럼, 사회 구성원들이 공통으로 가지는 문화의 속성을 무엇이라 하는가?", "answers": ["공유성"], "explain": "공유성은 한 사회 구성원들이 공통적으로 가지고 있는 생활 양식을 의미하며, 이를 통해 서로의 행동을 예측할 수 있습니다."}, {"q": "지역이나 사회마다 서로 다른 문화적 모습이 나타나는 특징을 무엇이라 하는가?", "answers": ["다양성", "특수성", "문화의 다양성"], "explain": "문화의 다양성(특수성)은 자연환경과 역사적 배경의 차이로 인해 지역·사회마다 서로 다른 문화가 나타나는 특징입니다."}, {"q": "인류의 보편적 가치를 무시하는 타문화의 관습을 무조건 인정하지 않고 비판하는 태도와 관련된 개념은 무엇인가?", "answers": ["보편윤리", "보편 윤리", "인류의 보편적 가치"], "explain": "문화 상대주의는 다른 문화를 그 사회의 맥락에서 이해하려는 태도이지만, 인권 등 인류의 '보편 윤리(보편적 가치)'를 심각하게 위배하는 관습까지 무조건 인정해서는 안 됩니다. 이렇게 무조건 인정하는 잘못된 태도를 '극단적 문화 상대주의'라고 하며, 보편 윤리의 관점에서는 이를 비판적으로 바라보아야 합니다."}]}, {"title": "Part 4. 미디어와 사회적 규범 및 법", "ox": [{"q": "책, 신문, 잡지 등은 문자로 정보를 전달하는 인쇄 미디어에 해당한다.", "a": true, "explain": "인쇄 미디어는 문자와 사진 등을 활용해 정보를 전달하는 매체로 책, 신문, 잡지 등이 해당합니다."}, {"q": "텔레비전, 라디오, 영화 등은 영상 미디어에 해당한다.", "a": false, "explain": "라디오는 소리로만 정보를 전달하는 '음성 미디어'입니다. 영상 미디어에는 텔레비전, 영화 등이 해당합니다."}, {"q": "사회 관계망 서비스(SNS)나 동영상 공유 플랫폼은 쌍방향 소통이 가능한 뉴 미디어이다.", "a": true, "explain": "뉴 미디어는 정보 생산자와 소비자가 쌍방향으로 소통할 수 있는 매체로 SNS, 동영상 공유 플랫폼 등이 해당합니다."}, {"q": "미디어 리터러시는 미디어를 비판적으로 이해하고 활용하는 능력을 뜻한다.", "a": true, "explain": "미디어 리터러시는 미디어가 전달하는 정보를 비판적으로 분석·평가하고 올바르게 활용하는 능력입니다."}, {"q": "온라인상에서는 익명성이 보장되므로 타인을 비방하는 글을 자유롭게 써도 된다.", "a": false, "explain": "온라인 공간에서도 명예훼손, 모욕 등은 법적 책임을 질 수 있으며, 익명성을 악용한 비방은 윤리적으로도 옳지 않습니다."}, {"q": "도덕은 인간 내면의 양심이나 도덕적 동기를 중요시하며 강제적인 처벌보다는 양심의 가책을 받는다.", "a": true, "explain": "도덕은 내면적 자율성에 기초한 규범으로, 이를 어기면 외부의 강제적 처벌보다는 양심의 가책을 받게 됩니다."}, {"q": "관습은 오랜 세월 동안 되풀이되어 사회 구성원들이 따르는 행동 양식이다.", "a": true, "explain": "관습은 한 사회에서 오랫동안 반복되어 굳어진 행동 양식으로 명절 풍습 등이 대표적입니다."}, {"q": "법은 도덕과 달리 강제력과 강력한 처벌이 따르는 특징이 있다.", "a": true, "explain": "법은 국가가 제정한 사회 규범으로 이를 어길 경우 국가 공권력에 의한 강제력과 처벌이 따릅니다."}, {"q": "정의의 여신상이 들고 있는 저울은 공정한 판단을 의미한다.", "a": true, "explain": "저울은 양쪽의 무게를 재듯 어느 한쪽에 치우치지 않는 공정한 판단(공평성)을 상징합니다."}, {"q": "정의의 여신상이 들고 있는 칼은 강력한 처벌과 법 집행의 엄정함을 의미한다.", "a": true, "explain": "칼은 법을 어겼을 때 가해지는 강력한 처벌과 법 집행의 엄정함을 상징합니다."}], "short": [{"q": "책, 신문, 잡지 등 문자로 정보를 전달하는 미디어의 종류는 무엇인가?", "answers": ["인쇄미디어", "인쇄 미디어"], "explain": "인쇄 미디어는 문자를 통해 정보를 전달하는 매체로, 책·신문·잡지 등이 해당합니다."}, {"q": "정보를 만드는 사람과 소비하는 사람이 쌍방향으로 소통하는 미디어를 무엇이라 하는가?", "answers": ["뉴미디어", "뉴 미디어"], "explain": "뉴 미디어는 기존 미디어와 달리 정보 생산자와 소비자의 경계가 모호해지고 쌍방향 소통이 가능한 매체입니다."}, {"q": "사회 질서를 유지하고 정의를 실현하기 위해 국가가 제정한 규범 중 강제성이 가장 강한 규범은 무엇인가?", "answers": ["법"], "explain": "법은 국가가 제정한 사회 규범으로, 도덕·관습 등 다른 규범에 비해 강제성(처벌)이 가장 강합니다."}, {"q": "정의의 여신상이 들고 있는 저울이 상징하는 것은 무엇인가?", "answers": ["공정성", "공평성", "공정한 판단"], "explain": "저울은 한쪽에 치우치지 않는 공정하고 공평한 판단을 상징합니다."}, {"q": "정의의 여신상이 들고 있는 칼이 상징하는 것은 무엇인가?", "answers": ["법집행의 엄정함", "강제성", "엄정한 법집행", "법 집행의 엄정함"], "explain": "칼은 법을 어겼을 때 가해지는 강력한 처벌과 엄정한 법 집행을 상징합니다."}]}]};
+
+let currentPart = 0;
+let totalQuestions = 0;
+let answeredCount = 0;
+let scoreCount = 0;
+
+function normalize(str){
+  return str.replace(/\s+/g, '').replace(/[()（）]/g,'').toLowerCase();
+}
+
+function buildOxCard(partIdx, qIdx, item){
+  const card = document.createElement('div');
+  card.className = 'card';
+  const idLabel = document.createElement('div');
+  idLabel.className = 'q-index';
+  idLabel.textContent = 'OX ' + (qIdx+1) + '번';
+  const qText = document.createElement('div');
+  qText.className = 'q-text';
+  qText.textContent = item.q;
+  const btnWrap = document.createElement('div');
+  btnWrap.className = 'ox-buttons';
+
+  const oBtn = document.createElement('button');
+  oBtn.className = 'ox-btn';
+  oBtn.textContent = 'O';
+  const xBtn = document.createElement('button');
+  xBtn.className = 'ox-btn';
+  xBtn.textContent = 'X';
+
+  const banner = document.createElement('div');
+  banner.className = 'result-banner';
+
+  const explain = document.createElement('div');
+  explain.className = 'explain';
+  explain.innerHTML = '<b>해설</b><br>' + item.explain;
+
+  function handleAnswer(chosen){
+    if(oBtn.disabled) return;
+    oBtn.disabled = true;
+    xBtn.disabled = true;
+    const correct = (chosen === item.a);
+    if(correct){
+      scoreCount += 1;
+      banner.classList.add('show','correct');
+      banner.textContent = '정답입니다!';
+      (chosen ? oBtn : xBtn).classList.add('chosen-correct');
+    } else {
+      banner.classList.add('show','wrong');
+      banner.textContent = '오답입니다. 정답은 ' + (item.a ? 'O' : 'X') + ' 입니다.';
+      (chosen ? oBtn : xBtn).classList.add('chosen-wrong');
+      (item.a ? oBtn : xBtn).classList.add('reveal-correct');
+    }
+    explain.classList.add('show');
+    answeredCount += 1;
+    updateStats();
+  }
+
+  oBtn.addEventListener('click', () => handleAnswer(true));
+  xBtn.addEventListener('click', () => handleAnswer(false));
+
+  btnWrap.appendChild(oBtn);
+  btnWrap.appendChild(xBtn);
+  card.appendChild(idLabel);
+  card.appendChild(qText);
+  card.appendChild(btnWrap);
+  card.appendChild(banner);
+  card.appendChild(explain);
+  return card;
+}
+
+function buildShortCard(partIdx, qIdx, item){
+  const card = document.createElement('div');
+  card.className = 'card';
+  const idLabel = document.createElement('div');
+  idLabel.className = 'q-index';
+  idLabel.textContent = '단답형 ' + (qIdx+1) + '번';
+  const qText = document.createElement('div');
+  qText.className = 'q-text';
+  qText.textContent = item.q;
+
+  const row = document.createElement('div');
+  row.className = 'short-row';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = '정답을 입력하세요';
+  const btn = document.createElement('button');
+  btn.textContent = '확인';
+
+  const banner = document.createElement('div');
+  banner.className = 'result-banner';
+
+  const explain = document.createElement('div');
+  explain.className = 'explain';
+  explain.innerHTML = '<b>모범 답안</b> ' + item.answers[0] + '<br><b>해설</b><br>' + item.explain;
+
+  function submit(){
+    if(btn.disabled) return;
+    const val = normalize(input.value || '');
+    const correct = item.answers.some(a => normalize(a) === val) && val.length > 0;
+    input.disabled = true;
+    btn.disabled = true;
+    if(correct){
+      scoreCount += 1;
+      banner.classList.add('show','correct');
+      banner.textContent = '정답입니다!';
+    } else {
+      banner.classList.add('show','wrong');
+      banner.textContent = '오답입니다. 모범 답안을 확인하세요.';
+    }
+    explain.classList.add('show');
+    answeredCount += 1;
+    updateStats();
+  }
+
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => { if(e.key === 'Enter') submit(); });
+
+  row.appendChild(input);
+  row.appendChild(btn);
+  card.appendChild(idLabel);
+  card.appendChild(qText);
+  card.appendChild(row);
+  card.appendChild(banner);
+  card.appendChild(explain);
+  return card;
+}
+
+function renderPart(idx){
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+  const part = QUIZ_DATA.parts[idx];
+
+  if(part.ox.length > 0){
+    const t = document.createElement('div');
+    t.className = 'section-title';
+    t.textContent = 'OX 퀴즈';
+    main.appendChild(t);
+    part.ox.forEach((item, i) => main.appendChild(buildOxCard(idx, i, item)));
+  }
+  if(part.short.length > 0){
+    const t2 = document.createElement('div');
+    t2.className = 'section-title';
+    t2.textContent = '단답형';
+    main.appendChild(t2);
+    part.short.forEach((item, i) => main.appendChild(buildShortCard(idx, i, item)));
+  }
+
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
+  document.getElementById('prevBtn').disabled = (idx === 0);
+  document.getElementById('nextBtn').disabled = (idx === QUIZ_DATA.parts.length - 1);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateStats(){
+  document.getElementById('progressText').textContent = answeredCount + ' / ' + totalQuestions;
+  document.getElementById('scoreText').textContent = scoreCount;
+  const pct = totalQuestions ? Math.round((answeredCount/totalQuestions)*100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  const finalMsg = document.getElementById('finalMsg');
+  if(answeredCount === totalQuestions && totalQuestions > 0){
+    finalMsg.classList.add('show');
+    finalMsg.textContent = '모든 문제를 풀었습니다! 총 ' + totalQuestions + '문제 중 ' + scoreCount + '문제를 맞혔습니다. (' + Math.round(scoreCount/totalQuestions*100) + '점)';
+  } else {
+    finalMsg.classList.remove('show');
+  }
+}
+
+function init(){
+  totalQuestions = 0;
+  QUIZ_DATA.parts.forEach(p => { totalQuestions += p.ox.length + p.short.length; });
+
+  const nav = document.getElementById('tabNav');
+  nav.innerHTML = '';
+  QUIZ_DATA.parts.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.className = 'tab-btn';
+    b.textContent = p.title.split('. ')[0];
+    b.title = p.title;
+    b.addEventListener('click', () => { currentPart = i; renderPart(i); });
+    nav.appendChild(b);
+  });
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if(currentPart > 0){ currentPart -= 1; renderPart(currentPart); }
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if(currentPart < QUIZ_DATA.parts.length - 1){ currentPart += 1; renderPart(currentPart); }
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    answeredCount = 0; scoreCount = 0; currentPart = 0;
+    updateStats();
+    renderPart(0);
+  });
+
+  updateStats();
+  renderPart(0);
+}
+
+init();
+</script>
+</body>
+</html>
